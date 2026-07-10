@@ -8,6 +8,53 @@
 
 📖 [中文完整文档 →](README_zh.md)
 
+## Who Is This For?
+
+This skill is designed for a broad range of users — from beginners to experienced makers:
+
+| User | Why it helps |
+|------|--------------|
+| 🎓 **3D Printing Beginners** | Start with parametric templates — skip the steep OpenSCAD learning curve. Describe your idea in natural language, get working SCAD code and STL output. |
+| 🔧 **Makers & Hobbyists** | Rapidly iterate on enclosures, brackets, mounting plates. No need to manually calculate hole positions or clearance tolerances — the skill handles it. |
+| 🛠️ **Engineers & Hardware Devs** | Integrate with EDA tools (KiCad/Eagle → DXF → mounting plate). Batch-export multi-version parts with `-D` parameter overrides. BOSL2 and NopSCADlib patterns included. |
+| 🤖 **AI/LLM Enthusiasts** | A reference implementation of a well-structured Claude Code skill: progressive disclosure, `references/` architecture, `paths` scoping, CI/CD validation. |
+| 📐 **OpenSCAD Learners** | 9 graded example files (basic → intermediate → advanced) with Chinese annotations. Reference guides cover screw specs, BOSL2 patterns, and real-world gotchas. |
+
+### Typical Use Cases
+
+- "I need a 100×60×3mm rounded plate with M3 mounting holes in a 4×2 grid" → working STL in seconds
+- "Design an enclosure for this 85×55mm PCB with USB cutout" → parametric enclosure generated
+- "Modify this existing STL — add 4mm mounting holes at the corners" → edits applied via OpenSCAD
+- "Convert this KiCad PCB DXF into a 3D-printable mounting plate" → DXF parsed, plate with standoffs generated
+- "Batch export the same bracket at 3mm, 5mm, and 8mm thickness" → three STLs from one command
+- "Merge these two STL files into one printable model" → trimesh concatenation
+
+### Scope & Limitations
+
+**✅ Well-suited for:**
+- Parametric mechanical parts (plates, brackets, enclosures, mounts, spacers)
+- Grid-based designs (Gridfinity, honeycomb storage wall, pegboard accessories)
+- Functional 3D prints with precise hole patterns and fasteners
+- PCB mounting solutions and electronics enclosures
+- Multi-part assemblies with fit tolerances
+
+**⚠️ Less suited for:**
+- Organic/artistic sculpting (use Blender or ZBrush instead)
+- Complex curved surfaces and sweeps (OpenSCAD's CSG paradigm is not ideal)
+- Models requiring constraint-based sketching (use Fusion 360 / FreeCAD)
+- Rendering/visualization-focused work (OpenSCAD has basic preview only)
+
+### Platforms & Tools
+
+| Platform | Support |
+|----------|---------|
+| **Claude Code** (CLI) | ✅ Native — skill auto-activates on SCAD/STL/3MF/DXF files |
+| **Claude Code** (VS Code / JetBrains) | ✅ Via IDE extensions |
+| **Claude.ai** (Web chat) | ⚠️ Limited — file operations available but no local OpenSCAD execution |
+| **Other AI tools** | 📖 Reference-only — SKILL.md and examples are educational resources |
+| **Codewhale** | ✅ Compatible — install to `~/.codewhale/skills/` |
+| **Any OpenSCAD user** | ✅ Standalone — examples and references work independent of Claude Code |
+
 ## Quick Install
 
 ```bash
