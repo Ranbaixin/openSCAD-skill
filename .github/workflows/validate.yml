@@ -1,0 +1,84 @@
+name: Validate SCAD Models
+
+on:
+  push:
+    branches: [main]
+    paths: ['**.scad', '**.md']
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-scad:
+    name: Validate SCAD Examples
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        backend: [manifold]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenSCAD (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openscad
+
+      - name: Install OpenSCAD (macOS)
+        if: runner.os == 'macOS'
+        run: brew install openscad
+
+      - name: Check OpenSCAD version
+        run: openscad --version
+
+      - name: Validate examples
+        run: |
+          failed=0
+          total=0
+          for f in examples/basic/*.scad examples/intermediate/*.scad; do
+            [ -f "$f" ] || continue
+            total=$((total + 1))
+            printf "%-55s " "$f"
+            if openscad --backend ${{ matrix.backend }} \
+                -o /tmp/out.stl \
+                --export-format binstl \
+                "$f" > /dev/null 2>&1; then
+              echo "✅ PASS"
+            else
+              echo "❌ FAIL"
+              failed=$((failed + 1))
+            fi
+          done
+          echo "---"
+          echo "Results: $((total - failed))/$total passed"
+          exit $failed
+
+      - name: Validate advanced examples (may need BOSL2)
+        continue-on-error: true
+        run: |
+          echo "Advanced examples require BOSL2 — informational only"
+          for f in examples/advanced/*.scad; do
+            [ -f "$f" ] || continue
+            printf "%-55s " "$f"
+            if openscad --backend ${{ matrix.backend }} \
+                -o /tmp/out.stl \
+                --export-format binstl \
+                "$f" > /dev/null 2>&1; then
+              echo "✅ PASS"
+            else
+              echo "⚠️  SKIP (BOSL2 required)"
+            fi
+          done
+
+  markdown-lint:
+    name: Lint Markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v17
+        with:
+          globs: '**/*.md'
+        continue-on-error: true

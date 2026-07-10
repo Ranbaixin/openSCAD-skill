@@ -1,0 +1,28 @@
+# Build artifacts
+*.stl
+*.3mf
+*.amf
+*.off
+*.csg
+*.png
+*.dxf
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dependencies
+node_modules/
