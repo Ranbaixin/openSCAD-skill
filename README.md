@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Validate](https://github.com/Ranbaixin/openSCAD-skill/actions/workflows/validate.yml/badge.svg)](https://github.com/Ranbaixin/openSCAD-skill/actions/workflows/validate.yml)
 
-**Claude Code skill for OpenSCAD parametric 3D modeling** — AI-assisted CAD for 3D printing.
+**Cross-platform OpenSCAD skill for Codex and Claude** — AI-assisted CAD and STL tooling for 3D printing.
 
 📖 [中文完整文档 →](README_zh.md)
 
@@ -28,6 +28,7 @@ This skill is designed for a broad range of users — from beginners to experien
 - "Convert this KiCad PCB DXF into a 3D-printable mounting plate" → DXF parsed, plate with standoffs generated
 - "Batch export the same bracket at 3mm, 5mm, and 8mm thickness" → three STLs from one command
 - "Merge these two STL files into one printable model" → trimesh concatenation
+- "Inspect or repair this binary STL" → deterministic mesh report and conservative repair script
 
 ### Scope & Limitations
 
@@ -48,7 +49,7 @@ This skill is designed for a broad range of users — from beginners to experien
 
 | Platform | Support |
 |----------|---------|
-| **Claude Code** (CLI) | ✅ Native — skill auto-activates on SCAD/STL/3MF/DXF files |
+| **Codex / Claude Code** (CLI) | ✅ Native — skill auto-activates on SCAD/STL/3MF/DXF files |
 | **Claude Code** (VS Code / JetBrains) | ✅ Via IDE extensions |
 | **Claude.ai** (Web chat) | ⚠️ Limited — file operations available but no local OpenSCAD execution |
 | **Other AI tools** | 📖 Reference-only — SKILL.md and examples are educational resources |
@@ -58,9 +59,13 @@ This skill is designed for a broad range of users — from beginners to experien
 ## Quick Install
 
 ```bash
-# Clone as a Claude Code skill
+# Clone as a Codex/Claude skill
 git clone https://github.com/Ranbaixin/openSCAD-skill.git \
   ~/.claude/skills/openscad-modeling/
+
+# For Codex, place the same folder under:
+# %CODEX_HOME%/skills/openscad-modeling/  (Windows)
+# or ~/.codex/skills/openscad-modeling/   (macOS/Linux)
 
 # Or add as a git submodule to your project
 git submodule add https://github.com/Ranbaixin/openSCAD-skill.git \
@@ -76,6 +81,8 @@ This skill teaches Claude how to:
 - **Analyze** STL dimensions and structure
 - **Import** DXF files (from KiCad/Eagle PCB designs) to generate mounting plates
 - **Merge** multiple STL models via Python trimesh
+- **Inspect and repair** ASCII/binary STL, including isolated components and simple boundary defects
+- **Validate** SCAD renders without leaving build artifacts in the repository
 
 ## Examples
 
@@ -93,6 +100,9 @@ See **[examples/](examples/)** for all files.
 
 - **OpenSCAD** (latest stable or nightly) — [download](https://openscad.org/downloads.html)
 - **Python 3.8+** (optional) — for STL validation/merging and DXF parsing
+  ```bash
+  python -m pip install trimesh numpy pytest
+  ```
 - **BOSL2** (optional) — for advanced examples; install via `git submodule add`
 
 ## Documentation
@@ -102,6 +112,7 @@ See **[examples/](examples/)** for all files.
 | [SKILL.md](SKILL.md) | Core skill definition (Chinese) |
 | [README_zh.md](README_zh.md) | Full Chinese documentation |
 | [references/](references/) | Progressive disclosure references — loaded on demand by Claude |
+| [scripts/](scripts/) | Cross-platform OpenSCAD discovery, STL inspection/repair, and SCAD validation |
 | [examples/](examples/) | 9 parameterized SCAD examples at 3 levels |
 
 ### Reference Guides
@@ -124,4 +135,4 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-*Made for [Claude Code](https://claude.ai/code) — the AI-powered CLI for developers.*
+*Designed for [Codex](https://openai.com/codex/) and [Claude Code](https://claude.ai/code) — AI-assisted CAD workflows for developers.*

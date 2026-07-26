@@ -3,7 +3,7 @@
 [![Version](https://img.shields.io/badge/version-1.0.0-blue)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**Claude Code 的 OpenSCAD 参数化 3D 建模技能** — AI 辅助 CAD，面向 3D 打印。
+**兼容 Codex 与 Claude 的 OpenSCAD 参数化 3D 建模技能** — AI 辅助 CAD 与 STL 工具，面向 3D 打印。
 
 ## 适用范围
 
@@ -45,7 +45,7 @@
 
 | 平台 | 支持程度 |
 |------|---------|
-| **Claude Code** (CLI) | ✅ 原生 — 技能在 SCAD/STL/3MF/DXF 文件上自动激活 |
+| **Codex / Claude Code** (CLI) | ✅ 原生 — 技能在 SCAD/STL/3MF/DXF 文件上自动激活 |
 | **Claude Code** (VS Code / JetBrains) | ✅ 通过 IDE 扩展 |
 | **Claude.ai** (网页对话) | ⚠️ 有限 — 可执行文件操作但不能本地渲染 OpenSCAD |
 | **其他 AI 工具** | 📖 仅参考 — SKILL.md 和示例可作为教育资源 |
@@ -86,6 +86,8 @@ git submodule add https://github.com/Ranbaixin/openSCAD-skill.git \
 - **分析** STL 文件尺寸和结构（Python 包围盒检查）
 - **导入** DXF 文件（KiCad/Eagle PCB 设计）并生成安装板
 - **合并**多个 STL 模型（Python trimesh）
+- **检查与修复** ASCII/binary STL，包括孤立组件和简单边界问题
+- **验证** SCAD 渲染并避免在仓库中留下构建产物
 
 ## 示例
 

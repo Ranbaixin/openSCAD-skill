@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — 2026-07-26
+
+### Added
+
+- Cross-platform Codex/Claude workflow for SCAD creation, STL analysis, conservative repair, and validation.
+- `scripts/inspect_stl.py` for ASCII/binary STL reports.
+- `scripts/repair_stl.py` for largest-component selection and conservative mesh repairs.
+- `scripts/validate_scad.py` for temporary-output SCAD rendering on Windows, macOS, and Linux.
+- Codex UI metadata in `agents/openai.yaml` and the `references/stl-workflow.md` guide.
+- Python tests for mesh tooling and OpenSCAD discovery.
+
+### Changed
+
+- Updated OpenSCAD discovery to recognize Windows `.com` and `.exe` installs and `OPENSCAD` overrides.
+- Updated documentation and CI expectations for cross-platform use.
+
 ## [1.0.0] — 2026-07-10
 
 ### Added

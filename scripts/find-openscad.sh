@@ -2,11 +2,17 @@
 # find-openscad.sh — Discover OpenSCAD CLI path on Unix/Linux/macOS
 # Returns the first found path, or exits 1 if not found.
 
-# 1. Check PATH first
-if command -v openscad &>/dev/null; then
-    echo "$(command -v openscad)"
+# 1. Respect an explicit override, then check PATH.
+if [[ -n "${OPENSCAD:-}" && -x "$OPENSCAD" ]]; then
+    echo "$OPENSCAD"
     exit 0
 fi
+for command_name in openscad openscad.com; do
+    if command -v "$command_name" &>/dev/null; then
+        echo "$(command -v "$command_name")"
+        exit 0
+    fi
+done
 
 # 2. macOS: check default .app bundle location
 if [[ -f "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD" ]]; then

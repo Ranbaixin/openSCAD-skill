@@ -1,0 +1,6 @@
+interface:
+  display_name: "OpenSCAD 建模与网格工具"
+  short_description: "参数化建模、STL 修复与跨平台导出"
+  default_prompt: "使用 $openscad-modeling 创建或修复一个可验证的 3D 打印模型。"
+policy:
+  allow_implicit_invocation: true

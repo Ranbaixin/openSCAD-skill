@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This is an OpenSCAD skill for Claude Code. When working in this repository:
+This is a cross-platform OpenSCAD skill for Codex and Claude. When working in this repository:
 
 ## Language
 - **Primary documentation**: Simplified Chinese (中文为主, `README_zh.md` is authoritative)
@@ -19,7 +19,8 @@ This is an OpenSCAD skill for Claude Code. When working in this repository:
 - Every example must be **independently renderable** — use only built-in OpenSCAD for basic/intermediate
 - Header comment explaining what the example teaches
 - Advanced examples may require BOSL2 (documented in comments)
-- Verification: `openscad -o /dev/null example.scad` must exit 0
+- Verification: `python scripts/validate_scad.py examples/basic/*.scad examples/intermediate/*.scad` must pass
+- Python mesh tooling tests: `python -m pytest tests -q`
 
 ## Git
 - Commit messages in Chinese or English
