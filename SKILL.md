@@ -25,6 +25,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 | STL 是扫描/自由曲面，不能合理参数化 | 保留修复后的 STL；SCAD 只用 `import()` 作为对应引用 |
 | 需要从 DXF/PCB 生成安装板 | 先读 `references/dxf-import-guide.md` |
 | 需要螺丝、螺母、PCB 标准件 | 按需读 BOSL2 或 NopSCADlib 参考 |
+| 多轮迭代的 L 形支架、托盘或分件装配 | 先读 `references/complex-assembly-workflow.md` |
 
 对尺寸、壁厚、孔位、装配间隙或输出格式不明确的需求，先用 ASCII 草图和一组最小问题确认，不要凭空猜关键尺寸。
 
@@ -37,6 +38,8 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 5. **渲染导出**：使用 `openscad --backend manifold model.scad -o model.stl`；必要时用 `-D` 批量导出。
 6. **几何验证**：用 `scripts/validate_scad.py` 验证 SCAD 渲染，再用 `scripts/inspect_stl.py --json` 检查输出尺寸、组件数和 watertight 状态。
 7. **交付说明**：列出生成文件、关键尺寸、验证结果和已知限制；不覆盖用户原始文件。
+
+对于需要与现有模型对接、包含孔位继承、分件螺钉连接或大悬臂加强的零件，先建立坐标/接口表，再开始建模；完整流程见 `references/complex-assembly-workflow.md`。
 
 ## 参数化 OpenSCAD 原则
 
@@ -103,6 +106,7 @@ python3 scripts/validate_scad.py examples/basic/rounded-plate.scad
 - `references/project-conventions.md`：项目结构与 `use`/`include` 约定。
 - `references/gotchas-and-workarounds.md`：CGAL、重合面、中文路径等问题。
 - `references/dxf-import-guide.md`：DXF 到安装板工作流。
+- `references/complex-assembly-workflow.md`：复杂装配、分件打印、孔位迁移与加强筋设计。
 
 ## 输出前检查清单
 
