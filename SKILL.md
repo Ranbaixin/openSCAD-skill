@@ -27,7 +27,16 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 | 需要螺丝、螺母、PCB 标准件 | 按需读 BOSL2 或 NopSCADlib 参考 |
 | 多轮迭代的 L 形支架、托盘或分件装配 | 先读 `references/complex-assembly-workflow.md` |
 
-对尺寸、壁厚、孔位、装配间隙或输出格式不明确的需求，先用 ASCII 草图和一组最小问题确认，不要凭空猜关键尺寸。
+## 交互与确认
+
+- 每个任务最多一轮集中确认；需求完整时直接执行。
+- 能从输入文件或上下文确定的信息不要提问，先检查现有模型、坐标和历史要求。
+- 用户已提供或批准实施方案，或明确要求继续、生成、执行时，视为已确认并直接执行。
+- 低风险遗漏采用保守默认值并在交付时说明，不为此提问。
+- 只有歧义会改变尺寸、孔位、装配方向或主体轮廓时，才一次性汇总所有关键问题。
+- 收到该轮回答后直接执行，不再进行第二次确认；剩余次要不确定性采用可逆、保守方案。
+- ASCII 草图仅用于检查模型和坐标后仍无法澄清的空间关系。
+- 默认创建新文件且不覆盖原文件；完成建模后直接验证和报告，不询问是否验证或导出。
 
 ## 标准流程
 
@@ -73,19 +82,10 @@ module m3_clearance(h = 100) {
 ## 命令速查
 
 ```powershell
-# Windows：发现 OpenSCAD
 & .\scripts\find-openscad.ps1
-
-# 检查 STL（支持 ASCII/binary）
 python scripts/inspect_stl.py input.stl --json
-
-# 删除小组件并尝试保守修复
 python scripts/repair_stl.py input.stl repaired.stl
-
-# 验证一个或多个 SCAD
 python scripts/validate_scad.py examples/basic/rounded-plate.scad
-
-# 导出 STL 与预览图
 openscad --backend manifold model.scad -o model.stl
 openscad model.scad --render --viewall --autocenter --imgsize=1024,768 -o preview.png
 ```
