@@ -5,21 +5,43 @@
 
 **兼容 Codex 与 Claude 的 OpenSCAD 参数化 3D 建模技能** — AI 辅助 CAD 与 STL 工具，面向 3D 打印。
 
+## 从仓库根目录完成首次装配验收
+
+安装 OpenSCAD 和 Python 3.11。示例只用 OpenSCAD 内置几何。Windows PowerShell 可以直接运行虚拟环境中的解释器。
+
+```powershell
+py -3.11 -m venv .venv
+& .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+& .\.venv\Scripts\python.exe scripts/verify_assembly.py --out "$env:TEMP\装配 验收"
+```
+
+macOS 和 Linux 使用相同入口。
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python scripts/verify_assembly.py --out "${TMPDIR:-/tmp}/装配 验收"
+```
+
+命令打印新建的 `run-*/report.json` 路径。`baseline/` 与 `variant/` 各含两个打印件；`reference/pcb.stl` 是参考 PCB。报告列出检查状态、实测、目标、公差、原始命令和诊断。必需项未通过时返回非零，先查首个 `FAIL` 或 `INDETERMINATE`。几何验收范围仅限报告中的最终装配姿态。[案例与坐标](examples/intermediate/assembly-fit/README.md)
+
+改尺寸时另存新版，保留输入。诊断 STL 用 `scripts/inspect_stl.py INPUT --json`。修复默认保留所有组件，输出须使用新路径。缺少 OpenSCAD 时交付的 SCAD 标注**未渲染**；缺少 Python 几何依赖时标注相应检查**未验证**。[STL 修复](references/stl-workflow.md) · [Agent 对照评测](evals/README.md)
+
 ## 适用范围
 
 ### 适合谁用？
 
 | 用户 | 为什么适合 |
 |------|-----------|
-| 🎓 **3D 打印新手** | 从参数化模板开始，跳过 OpenSCAD 陡峭的学习曲线。用自然语言描述想法，直接得到可用的 SCAD 代码和 STL 文件。 |
-| 🔧 **创客 & 爱好者** | 快速迭代外壳、支架、安装板。无需手工计算孔位和间隙公差 — 技能自动处理。 |
+| 🎓 **3D 打印新手** | 从可编辑的参数化样例开始，用首次运行命令导出 STL，并查看实测尺寸。 |
+| 🔧 **创客 & 爱好者** | 迭代外壳、支架、安装板，按明确的孔位和间隙目标核对导出件。 |
 | 🛠️ **工程师 & 硬件开发者** | 与 EDA 工具集成（KiCad/Eagle → DXF → 安装板）。通过 `-D` 参数批量导出多版本零件。内置 BOSL2 和 NopSCADlib 模式。 |
-| 🤖 **AI/LLM 爱好者** | Claude Code 技能的结构化参考实现：渐进式加载、`references/` 架构、`paths` 作用域、CI/CD 验证。 |
-| 📐 **OpenSCAD 学习者** | 9 个分级示例（入门→中级→高级），中文注释。参考文档涵盖螺丝规格、BOSL2 模式和实战陷阱。 |
+| 🤖 **AI/LLM 爱好者** | 运行 Skill 开关对照任务，按生成文件、工具记录和验证报告评分。 |
+| 📐 **OpenSCAD 学习者** | 中文注释的分级示例涵盖零件、装配与几何验证。 |
 
 ### 典型使用场景
 
-- 「我需要一块 100×60×3mm 的圆角板，上面 4×2 排列 M3 安装孔」→ 秒出 STL
+- 「我需要一块 100×60×3mm 的圆角板，上面 4×2 排列 M3 安装孔」→ 参数化板件与 STL 导出
 - 「给这块 85×55mm 的 PCB 设计一个外壳，带 USB 开孔」→ 自动生成参数化外壳
 - 「修改这个 STL 文件 — 在四角加 4mm 安装孔」→ OpenSCAD 直接编辑
 - 「把 KiCad 的 PCB DXF 转成 3D 打印安装板」→ DXF 解析 + 自动生成支柱
@@ -45,7 +67,7 @@
 
 | 平台 | 支持程度 |
 |------|---------|
-| **Codex / Claude Code** (CLI) | ✅ 原生 — 技能在 SCAD/STL/3MF/DXF 文件上自动激活 |
+| **Codex / Claude Code** (CLI) | 安装完整技能目录后，提出建模任务或按名称调用技能。 |
 | **Claude Code** (VS Code / JetBrains) | ✅ 通过 IDE 扩展 |
 | **Claude.ai** (网页对话) | ⚠️ 有限 — 可执行文件操作但不能本地渲染 OpenSCAD |
 | **其他 AI 工具** | 📖 仅参考 — SKILL.md 和示例可作为教育资源 |
@@ -70,7 +92,7 @@ git submodule add https://github.com/Ranbaixin/openSCAD-skill.git \
 
 ### 方式 3: 手动复制
 
-将本仓库的 `SKILL.md` 复制到 `%USERPROFILE%\.claude\skills\openscad-modeling\SKILL.md`（Windows）或 `~/.claude/skills/openscad-modeling/SKILL.md`（Mac/Linux）。
+将整个仓库复制到 `%USERPROFILE%\.claude\skills\openscad-modeling\`（Windows）或 `~/.claude/skills/openscad-modeling/`（macOS/Linux），以便加载脚本、示例和参考资料。
 
 ### 验证安装
 
@@ -91,7 +113,7 @@ git submodule add https://github.com/Ranbaixin/openSCAD-skill.git \
 
 ## 示例
 
-9 个渐进式示例，全部参数化、独立可渲染:
+入门和中级示例使用内置几何，高级示例的第三方依赖见各文件头部。
 
 ### 入门级 (`examples/basic/`)
 
@@ -106,6 +128,7 @@ git submodule add https://github.com/Ranbaixin/openSCAD-skill.git \
 | 示例 | 文件 | 知识点 |
 |------|------|--------|
 | 参数化外壳 | `parametric-enclosure.scad` | `for` 循环阵列、PCB 支柱、通风槽、USB 开口 |
+| 改壁厚与装配验收 | [assembly-fit](examples/intermediate/assembly-fit/README.md) | 实测两个版本的孔位、通孔和 PCB 保留空间 |
 | 打印就位铰链 | `print-in-place-hinge.scad` | 0.3mm 打印间隙 + 互锁几何 |
 | Gridfinity 底板 | `gridfinity-baseplate.scad` | 42mm 标准实现 + 磁铁孔 + 沉头螺丝孔 |
 
@@ -131,7 +154,7 @@ openscad examples/basic/rounded-plate.scad \
 
 ## 参考文档
 
-7 份渐进式参考文件，Claude 按需加载:
+参考文件按任务需要加载。
 
 | 参考 | 文件 | 内容 |
 |------|------|------|
@@ -146,9 +169,9 @@ openscad examples/basic/rounded-plate.scad \
 ## 环境要求
 
 - **OpenSCAD** (最新稳定版或 nightly) — [下载](https://openscad.org/downloads.html)
-- **Python 3.8+** (可选) — STL 验证和合并、DXF 解析
+- **Python 3.11** 是几何验收使用的 CI 版本。直接用 OpenSCAD 渲染单个文件可独立进行。
   ```bash
-  pip install trimesh numpy
+  python -m pip install -r requirements.txt pytest
   ```
 - **BOSL2** (可选，advanced 示例需要) — 安装方式见 [BOSL2 参考](references/bosl2-patterns.md)
 
@@ -165,7 +188,7 @@ openSCAD-skill/
 ├── CHANGELOG.md                 # 版本历史
 ├── references/                  # 渐进式参考文件
 ├── scripts/                     # 跨平台工具发现脚本
-├── examples/                    # 9 个分级 SCAD 示例
+├── examples/                    # 分级 SCAD 示例与装配案例
 └── .github/workflows/           # CI/CD
 ```
 
@@ -191,14 +214,14 @@ openSCAD-skill/
 
 ### Q: CGAL 渲染错误怎么办？
 
-1. 优先尝试 Manifold 后端: `openscad --backend manifold model.scad -o model.stl`
+1. 用 `scripts/validate_scad.py` 探测后端选项；当前版本提供选项时可尝试 Manifold。
 2. 检查 `difference()` 是否有重合面 — 将减去的 cylinder 高度多延伸 1mm
 3. 降低 `$fn` 值排查是否是精度问题
 4. 详细排查见 [常见陷阱参考](references/gotchas-and-workarounds.md)
 
 ### Q: 中文路径报错？
 
-OpenSCAD 的 `import()` 不支持非 ASCII 路径。将项目放在纯英文路径下（如 `C:\projects\`）。
+先查看日志中的工作目录与导入文件名。Windows 2021.01 已实测支持含中文和空格的输出目录；遇到特定版本的路径错误，可将含依赖的项目副本放入新的英文目录复跑。
 
 ## 贡献
 

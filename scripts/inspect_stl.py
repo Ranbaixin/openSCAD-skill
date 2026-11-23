@@ -8,7 +8,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-import trimesh
+try:
+    import numpy as np
+    import trimesh
+except ModuleNotFoundError as exc:
+    if __name__ == "__main__":
+        raise SystemExit(f"Missing geometry dependency {exc.name}; install with python -m pip install -r requirements.txt") from None
+    raise
 
 
 def load_mesh(path: str | Path) -> trimesh.Trimesh:
@@ -16,7 +22,7 @@ def load_mesh(path: str | Path) -> trimesh.Trimesh:
     source = Path(path)
     if not source.is_file():
         raise FileNotFoundError(source)
-    loaded = trimesh.load(source, force="scene")
+    loaded = trimesh.load(source, force="scene", process=False)
     if isinstance(loaded, trimesh.Scene):
         if not loaded.geometry:
             raise ValueError(f"No mesh geometry found in {source}")
@@ -25,12 +31,15 @@ def load_mesh(path: str | Path) -> trimesh.Trimesh:
         mesh = loaded
     if not isinstance(mesh, trimesh.Trimesh) or len(mesh.faces) == 0:
         raise ValueError(f"No triangular mesh found in {source}")
+    if not np.isfinite(mesh.vertices).all():
+        raise ValueError(f"Non-finite STL coordinates in {source}")
+    mesh.merge_vertices()
     return mesh
 
 
 def mesh_report(mesh: trimesh.Trimesh, source: str | Path | None = None) -> dict[str, Any]:
     """Return JSON-serializable mesh diagnostics."""
-    components = mesh.split(only_watertight=False)
+    components = mesh.split(only_watertight=False, repair=False)
     return {
         "path": str(source) if source is not None else None,
         "vertices": int(len(mesh.vertices)),
@@ -39,6 +48,8 @@ def mesh_report(mesh: trimesh.Trimesh, source: str | Path | None = None) -> dict
         "bounds_max_mm": [float(v) for v in mesh.bounds[1]],
         "extents_mm": [float(v) for v in mesh.extents],
         "volume_mm3": float(abs(mesh.volume)),
+        "signed_volume_mm3": float(mesh.volume),
+        "degenerate_faces": int((~mesh.nondegenerate_faces()).sum()),
         "surface_area_mm2": float(mesh.area),
         "component_count": int(len(components)),
         "component_face_counts": sorted((int(len(c.faces)) for c in components), reverse=True),
@@ -56,10 +67,10 @@ def main() -> int:
     args = parser.parse_args()
     try:
         report = mesh_report(load_mesh(args.input), args.input)
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, ImportError) as exc:
         parser.error(str(exc))
     if args.as_json:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
+        print(json.dumps(report, ensure_ascii=True, indent=2))
     else:
         print(f"file: {report['path']}")
         print(f"size_mm: {report['extents_mm']}")

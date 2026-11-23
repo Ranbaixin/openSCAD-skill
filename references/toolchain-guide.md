@@ -54,50 +54,15 @@ openscad-format file.scad
 
 ## CI/CD — GitHub Actions
 
-### 基础模型验证流水线
+### 基础样例与装配验收
 
-```yaml
-# .github/workflows/validate.yml
-name: Validate SCAD Models
+仓库的 [验证工作流](../.github/workflows/validate.yml) 包含 Windows、macOS 和 Linux。安装 OpenSCAD 后，从仓库根目录用虚拟环境的 Python 运行以下命令。验证脚本会发现可执行文件，并探测已安装版本支持的后端选项。
 
-on:
-  push:
-    paths: ['**/*.scad']
-  pull_request:
-
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        backend: [manifold]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Install OpenSCAD
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openscad
-
-      - name: Validate examples
-        run: |
-          failed=0
-          for f in examples/**/*.scad; do
-            echo "::group::Checking $f"
-            if openscad --backend ${{ matrix.backend }} \
-                -o /tmp/out.stl \
-                --export-format binstl \
-                "$f" 2>&1; then
-              echo "✅ PASS"
-            else
-              echo "❌ FAIL"
-              ((failed++))
-            fi
-            echo "::endgroup::"
-          done
-          exit $failed
+```text
+python -m pip install -r requirements.txt pytest
+python -m pytest tests -q
+python scripts/validate_scad.py "examples/basic/*.scad" "examples/intermediate/*.scad"
+python scripts/verify_assembly.py --out "artifacts/装配 evidence"
 ```
 
 ### 多文件项目 CI

@@ -9,6 +9,9 @@
 
 # Python
 __pycache__/
+.venv/
+.pytest_cache/
+/artifacts/
 *.py[cod]
 *.egg-info/
 

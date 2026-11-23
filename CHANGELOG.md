@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added an enclosure wall-change regression with independent hole, wall, clearance and fixed-pose measurements, two printable STLs per variant, a PCB reference and a JSON report.
+- Changed STL repair to retain all components by default. Use `--keep-largest` for the former behavior. An explicit `--min-component-ratio 1` retains one largest component, including ties. Other ratios retain components at or above the specified fraction of the largest face count.
+- Repair now verifies a temporary binary STL before publishing to a new path. Input aliases, existing outputs, ambiguous nested winding, severe float32 precision loss and invalid readback produce a failure.
+- Restored Python 3.11 compatibility, declared the mesh graph dependency and added a matched local-agent evaluation package.
+
 ### Changed
 
 - Simplified modeling interactions to at most one consolidated confirmation round while preserving requirement analysis, conservative defaults, export, and geometry validation.
