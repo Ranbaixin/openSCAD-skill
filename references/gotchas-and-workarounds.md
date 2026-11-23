@@ -4,12 +4,9 @@ OpenSCAD 开发中反复出现的问题及其解决方案。
 
 ## 🔴 中文路径 / 非 ASCII 路径
 
-**问题**: `import()` 中文路径下的文件崩溃或静默失败。
+Windows OpenSCAD 2021.01 读取文件名时受系统 ANSI 代码页影响。实测在代码页 936 上，中文目录的相对 STL 导入成功，含 📐 的目录则出现 `Can't open import file`，诊断路径中该字符变成 `??`。
 
-**解决方案**:
-- 项目路径只用 ASCII（英文/数字/下划线/连字符）
-- 用户名含中文时，将项目放在 `C:\Users\Public\` 或 `C:\projects\` 下
-- STL 导出路径同样避免中文
+装配入口遇到这种路径时优先使用已有的 Windows 短文件名。输出卷没有可用别名时，脚本在临时目录运行并把 STL、诊断及报告放回本次新建的输出目录。若临时目录自身也无法表示，可在 PowerShell 中把 `$env:TEMP` 和 `$env:TMP` 指向可写的纯英文目录后重跑。若输入 SCAD 或它引用的库仍报 `Can't open input file`，将项目及依赖另存到纯英文路径，使用 `--model` 指向副本。
 
 ## 🔴 CGAL 渲染崩溃
 
@@ -18,7 +15,7 @@ OpenSCAD 开发中反复出现的问题及其解决方案。
 **原因**: CGAL 对非流形 (non-manifold) 几何体的容忍度极低。
 
 **解决方案**:
-1. 改用 Manifold 后端: `openscad --backend manifold`
+1. 通过 `scripts/validate_scad.py` 检测后端能力；支持后端参数时可选择 Manifold。
 2. 检查 `difference()` 是否有重合面 — 将被减体延伸 0.01mm
 3. 避免 `polyhedron()` 的自交面
 4. 减小 `$fn` 看是否是精度问题

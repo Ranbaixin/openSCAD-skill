@@ -1,0 +1,3 @@
+numpy>=1.24
+trimesh>=4.7,<6
+networkx>=3

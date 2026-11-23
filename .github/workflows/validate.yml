@@ -3,7 +3,7 @@ name: Validate OpenSCAD Skill
 on:
   push:
     branches: [main]
-    paths: ['**.scad', '**.md', '**.py', '**.ps1', '**.sh', '.github/workflows/validate.yml']
+    paths: ['**.scad', '**.md', '**.py', '**.ps1', '**.sh', '**.json', 'requirements.txt', '.github/workflows/validate.yml']
   pull_request:
     branches: [main]
 
@@ -26,7 +26,7 @@ jobs:
 
       - name: Install OpenSCAD (macOS)
         if: runner.os == 'macOS'
-        run: brew install openscad
+        run: brew install --cask openscad@snapshot
 
       - name: Install OpenSCAD (Windows)
         if: runner.os == 'Windows'
@@ -38,13 +38,30 @@ jobs:
           python-version: '3.11'
 
       - name: Install Python tooling
-        run: python -m pip install --upgrade pytest trimesh numpy
+        run: python -m pip install -r requirements.txt pytest
 
-      - name: Check OpenSCAD version
-        run: openscad --version
+      - name: Record tool versions
+        run: |
+          python --version
+          python -m pip freeze
+          python -c "from scripts.validate_scad import OpenSCAD,find_openscad; print(OpenSCAD.probe(find_openscad()))"
 
       - name: Run Python tests
-        run: python -m pytest tests -q
+        run: |
+          python -c "from pathlib import Path; Path('artifacts').mkdir(exist_ok=True)"
+          python -m pytest tests -q --basetemp=artifacts/pytest-work --junitxml=artifacts/pytest.xml
+
+      - name: Measure the baseline and variant in a Unicode output directory
+        run: python scripts/verify_assembly.py --wall 3 --out "artifacts/装配 evidence"
+
+      - name: Preserve measurements and test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: measurements-${{ matrix.os }}
+          path: |
+            artifacts/pytest.xml
+            artifacts/**/report.json
 
       - name: Validate basic and intermediate examples
         run: python scripts/validate_scad.py "examples/basic/*.scad" "examples/intermediate/*.scad"

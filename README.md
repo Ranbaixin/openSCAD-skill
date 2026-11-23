@@ -8,21 +8,45 @@
 
 📖 [中文完整文档 →](README_zh.md)
 
+## First run from the repository root
+
+Install OpenSCAD and Python 3.11. The example uses built-in OpenSCAD geometry. Install the Python mesh tools in a virtual environment.
+
+**Windows PowerShell**
+
+```powershell
+py -3.11 -m venv .venv
+& .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+& .\.venv\Scripts\python.exe scripts/verify_assembly.py --out "$env:TEMP\CAD fit"
+```
+
+**macOS or Linux**
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python scripts/verify_assembly.py --out "${TMPDIR:-/tmp}/CAD fit"
+```
+
+The command prints the path to a fresh `run-*/report.json`. Each of `baseline/` and `variant/` contains printable `base.stl` and `lid.stl`, plus a reference PCB under `reference/`. Read the first failed or indeterminate check for its measurements, target, tolerance and renderer diagnostics. A required check without a pass gives a nonzero exit. Physical fit and strength require separate evidence. [Example and coordinates](examples/intermediate/assembly-fit/README.md)
+
+Keep the input and write each revision to a new path. For STL diagnosis use `scripts/inspect_stl.py INPUT --json`. Repair preserves all components by default and rejects existing outputs. Without OpenSCAD a source delivery is **unrendered**. Missing Python geometry dependencies leave the corresponding measurements **unverified**. [STL repair](references/stl-workflow.md) · [Agent evaluation](evals/README.md)
+
 ## Who Is This For?
 
 This skill is designed for a broad range of users — from beginners to experienced makers:
 
 | User | Why it helps |
 |------|--------------|
-| 🎓 **3D Printing Beginners** | Start with parametric templates — skip the steep OpenSCAD learning curve. Describe your idea in natural language, get working SCAD code and STL output. |
-| 🔧 **Makers & Hobbyists** | Rapidly iterate on enclosures, brackets, mounting plates. No need to manually calculate hole positions or clearance tolerances — the skill handles it. |
+| 🎓 **3D Printing Beginners** | Start from an editable example and use the first-run command to render STL files and read their measurements. |
+| 🔧 **Makers & Hobbyists** | Iterate on enclosures, brackets and mounting plates with named hole positions and measured clearances. |
 | 🛠️ **Engineers & Hardware Devs** | Integrate with EDA tools (KiCad/Eagle → DXF → mounting plate). Batch-export multi-version parts with `-D` parameter overrides. BOSL2 and NopSCADlib patterns included. |
-| 🤖 **AI/LLM Enthusiasts** | A reference implementation of a well-structured Claude Code skill: progressive disclosure, `references/` architecture, `paths` scoping, CI/CD validation. |
-| 📐 **OpenSCAD Learners** | 9 graded example files (basic → intermediate → advanced) with Chinese annotations. Reference guides cover screw specs, BOSL2 patterns, and real-world gotchas. |
+| 🤖 **AI/LLM Enthusiasts** | Run paired skill-on and skill-off tasks and score their files, tool calls and reports. |
+| 📐 **OpenSCAD Learners** | Graded examples with Chinese annotations cover standard parts, assembly and inspection. |
 
 ### Typical Use Cases
 
-- "I need a 100×60×3mm rounded plate with M3 mounting holes in a 4×2 grid" → working STL in seconds
+- "I need a 100×60×3mm rounded plate with M3 mounting holes in a 4×2 grid" → parameterized SCAD with an STL export
 - "Design an enclosure for this 85×55mm PCB with USB cutout" → parametric enclosure generated
 - "Modify this existing STL — add 4mm mounting holes at the corners" → edits applied via OpenSCAD
 - "Convert this KiCad PCB DXF into a 3D-printable mounting plate" → DXF parsed, plate with standoffs generated
@@ -49,7 +73,7 @@ This skill is designed for a broad range of users — from beginners to experien
 
 | Platform | Support |
 |----------|---------|
-| **Codex / Claude Code** (CLI) | ✅ Native — skill auto-activates on SCAD/STL/3MF/DXF files |
+| **Codex / Claude Code** (CLI) | Install the skill directory, then request a modeling task or invoke the skill by name. |
 | **Claude Code** (VS Code / JetBrains) | ✅ Via IDE extensions |
 | **Claude.ai** (Web chat) | ⚠️ Limited — file operations available but no local OpenSCAD execution |
 | **Other AI tools** | 📖 Reference-only — SKILL.md and examples are educational resources |
@@ -86,12 +110,12 @@ This skill teaches Claude how to:
 
 ## Examples
 
-Nine progressively complex, production-ready SCAD examples included:
+The examples progress from individual parts to assemblies.
 
 | Level | Examples | Skills Demonstrated |
 |-------|----------|---------------------|
 | **Basic** | Rounded plate, L-bracket, Snap-fit lid | `hull()`, `difference()`, parametric design, tolerances |
-| **Intermediate** | Enclosure, Print-in-place hinge, Gridfinity | `for` loops, standoffs, ventilation, standard compliance |
+| **Intermediate** | Enclosure, print-in-place hinge, Gridfinity, enclosure wall change | Standoffs, ventilation, fixed hole positions and measured PCB clearance |
 | **Advanced** | BOSL2 fasteners, Multi-part assembly, DXF import | `use<>` patterns, `anchor/spin/attach`, DXF workflow |
 
 See **[examples/](examples/)** for all files.
@@ -99,9 +123,9 @@ See **[examples/](examples/)** for all files.
 ## Requirements
 
 - **OpenSCAD** (latest stable or nightly) — [download](https://openscad.org/downloads.html)
-- **Python 3.8+** (optional) — for STL validation/merging and DXF parsing
+- **Python 3.11** is the CI version for geometry verification. Rendering a single SCAD directly only needs OpenSCAD.
   ```bash
-  python -m pip install trimesh numpy pytest
+  python -m pip install -r requirements.txt pytest
   ```
 - **BOSL2** (optional) — for advanced examples; install via `git submodule add`
 
@@ -113,7 +137,7 @@ See **[examples/](examples/)** for all files.
 | [README_zh.md](README_zh.md) | Full Chinese documentation |
 | [references/](references/) | Progressive disclosure references — loaded on demand by Claude |
 | [scripts/](scripts/) | Cross-platform OpenSCAD discovery, STL inspection/repair, and SCAD validation |
-| [examples/](examples/) | 9 parameterized SCAD examples at 3 levels |
+| [examples/](examples/) | Parameterized examples at three levels |
 
 ### Reference Guides
 

@@ -28,7 +28,7 @@ def test_inspect_supports_binary_and_ascii(tmp_path: Path):
 
 
 def test_repair_removes_isolated_component_and_keeps_main_geometry():
-    repaired = repair_mesh(_fixture_mesh())
+    repaired = repair_mesh(_fixture_mesh(), keep_largest=True)
     report = mesh_report(repaired)
     assert report["component_count"] == 1
     assert report["watertight"] is True
