@@ -47,7 +47,9 @@ jobs:
           python -c "from scripts.validate_scad import OpenSCAD,find_openscad; print(OpenSCAD.probe(find_openscad()))"
 
       - name: Run Python tests
-        run: python -m pytest tests -q --junitxml=artifacts/pytest.xml
+        run: |
+          python -c "from pathlib import Path; Path('artifacts').mkdir(exist_ok=True)"
+          python -m pytest tests -q --basetemp=artifacts/pytest-work --junitxml=artifacts/pytest.xml
 
       - name: Measure the baseline and variant in a Unicode output directory
         run: python scripts/verify_assembly.py --wall 3 --out "artifacts/装配 evidence"

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import hashlib
 import importlib.metadata
 import json
@@ -11,18 +12,37 @@ import math
 import os
 from pathlib import Path
 import platform
+import shutil
 import subprocess
 import sys
 import tempfile
 
 if __package__:
-    from .validate_scad import OpenSCAD, configure_console, find_openscad
+    from .validate_scad import OpenSCAD, configure_console, find_openscad, renderer_path
 else:
-    from validate_scad import OpenSCAD, configure_console, find_openscad
+    from validate_scad import OpenSCAD, configure_console, find_openscad, renderer_path
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = ROOT / "examples/intermediate/assembly-fit/enclosure.scad"
 PARTS = ("base", "lid", "pcb")
+
+
+@contextmanager
+def render_directory(output):
+    writable_path = renderer_path(output)
+    if writable_path is not None:
+        yield writable_path
+        return
+    # 部分 Windows 卷禁用短文件名。所有相对 import 必须在同一目录树中解析。
+    with tempfile.TemporaryDirectory(prefix="openscad-fit-") as scratch:
+        working = renderer_path(Path(scratch))
+        if working is None:
+            raise ValueError("Windows OpenSCAD cannot read the temporary path; point TEMP and TMP "
+                             "to a writable ASCII directory and rerun")
+        try:
+            yield working
+        finally:
+            shutil.copytree(scratch, output, dirs_exist_ok=True)
 
 
 def planned_checks():
@@ -284,10 +304,16 @@ def main():
         parser.error("wall must be finite, positive and leave an inner cavity (< 30 mm)")
     args.out.mkdir(parents=True, exist_ok=True)
     run = Path(tempfile.mkdtemp(prefix="run-", dir=args.out.resolve()))
-    check = Measurements(run, args.model.resolve(), args.wall)
+    model = args.model.resolve()
+    check = None
     try:
-        check.execute(args.backend)
+        with render_directory(run) as working:
+            check = Measurements(working, model, args.wall)
+            check.report.update(render_directory=str(working), output_directory=str(run))
+            check.execute(args.backend)
     except (ValueError, OSError, RuntimeError, ImportError, subprocess.SubprocessError) as exc:
+        if check is None:
+            check = Measurements(run, model, args.wall)
         if check.rows["environment"]["status"] == "NOT_RUN":
             check.unknown("environment", exc)
         check.report["error"] = str(exc)

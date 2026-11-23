@@ -6,12 +6,15 @@ import sys
 
 import pytest
 
+from scripts import verify_assembly
+from scripts.inspect_stl import load_mesh
+
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = ROOT / "examples/intermediate/assembly-fit/enclosure.scad"
 
 
 def run_case(tmp_path, model=None):
-    out = tmp_path / "装配 evidence"
+    out = tmp_path / "装配 📐 evidence"
     args = [sys.executable, "-X", "utf8", str(ROOT / "scripts/verify_assembly.py"), "--out", str(out)]
     if model:
         args.extend(["--model", str(model)])
@@ -26,7 +29,8 @@ def run_case(tmp_path, model=None):
 
 def test_wall_variants_preserve_assembly(tmp_path):
     result, checks, path = run_case(tmp_path)
-    assert result.returncode == 0, (path, [r for r in checks.values() if r["status"] != "PASS"])
+    problems = [(r["name"], r["reason"]) for r in checks.values() if r["status"] in ("FAIL", "INDETERMINATE")]
+    assert result.returncode == 0, (path, problems)
     for prefix, thickness in (("baseline", 2), ("variant", 3)):
         assert checks[f"{prefix}.base.wall"]["measured"] == pytest.approx([thickness] * 4)
         for part in ("base", "lid", "pcb"):
@@ -36,6 +40,24 @@ def test_wall_variants_preserve_assembly(tmp_path):
             assert checks[f"{prefix}.{probe}"]["status"] == "PASS"
     assert checks["comparison.base"]["status"] == "PASS"
     assert checks["comparison.lid"]["status"] == checks["comparison.pcb"]["status"] == "PASS"
+
+
+def test_publish_mesh_when_volume_has_no_usable_short_path(tmp_path, monkeypatch):
+    destination = tmp_path / "装配 📐"
+    destination.mkdir()
+    original = verify_assembly.renderer_path
+    monkeypatch.setattr(verify_assembly, "renderer_path",
+                        lambda path: None if path == destination else original(path))
+    cad = verify_assembly.OpenSCAD.probe(verify_assembly.find_openscad())
+    with verify_assembly.render_directory(destination) as working:
+        assert working != destination
+        result = cad.render(None, working / "cube.stl", expression="cube(2);")
+        assert "error" not in result, result
+        joined = cad.render(None, working / "pair.stl",
+                            expression='union(){import("cube.stl");translate([3,0,0]) cube(1);}')
+        assert "error" not in joined, joined
+    assert not working.exists()
+    assert load_mesh(destination / "pair.stl").volume == pytest.approx(9)
 
 
 @pytest.mark.parametrize("fault,expression,check", [

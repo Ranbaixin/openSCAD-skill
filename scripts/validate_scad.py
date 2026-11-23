@@ -66,6 +66,27 @@ def decode_log(data: bytes) -> str:
         return data.decode("mbcs" if os.name == "nt" else locale.getpreferredencoding(False), errors="replace")
 
 
+def renderer_path(path: Path) -> Path | None:
+    """返回旧版 Windows 渲染器能读到的现有路径，含可用的 8.3 别名。"""
+    if os.name != "nt":
+        return path
+
+    def representable(value):
+        return value.encode("mbcs", errors="replace").decode("mbcs") == value
+
+    if representable(str(path)):
+        return path
+    import ctypes
+    short_name = ctypes.windll.kernel32.GetShortPathNameW
+    size = short_name(str(path), None, 0)
+    if size:
+        buffer = ctypes.create_unicode_buffer(size)
+        written = short_name(str(path), buffer, size)
+        if 0 < written < size and representable(buffer.value):
+            return Path(buffer.value)
+    return None
+
+
 def configure_console():
     for stream in (sys.stdout, sys.stderr):
         if not stream.isatty():
@@ -93,13 +114,17 @@ class OpenSCAD:
             args += ["--backend", self.backend_option]
         for name, value in (defines or {}).items():
             args += ["-D", name + "=" + json.dumps(value, allow_nan=False)]
-        args += ["--export-format", "binstl", "-o", output.name,
-                 "-" if expression is not None else str(Path(native_path(source)).resolve())]
-        record = {"command": args, "cwd": str(output.parent), "expression": expression, "exit_code": None}
+        source_arg = "-"
+        if expression is None:
+            original = Path(native_path(source)).resolve()
+            source_arg = str(renderer_path(original) or original)
+        args += ["--export-format", "binstl", "-o", output.name, source_arg]
+        cwd = renderer_path(output.parent) or output.parent
+        record = {"command": args, "cwd": str(cwd), "expression": expression, "exit_code": None}
         try:
             if os.path.lexists(output):
                 raise FileExistsError(f"render target already exists: {output}")
-            proc = subprocess.run(args, cwd=output.parent, capture_output=True, timeout=120,
+            proc = subprocess.run(args, cwd=cwd, capture_output=True, timeout=120,
                                   input=expression.encode("utf-8") if expression is not None else None)
             log = decode_log(proc.stdout) + "\n" + decode_log(proc.stderr)
             record.update(exit_code=proc.returncode, log=log.strip())
